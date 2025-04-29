@@ -28,6 +28,7 @@ import SendIcon from '@mui/icons-material/Send';
 import FullscreenIcon from '@mui/icons-material/Fullscreen';
 import CompareIcon from '@mui/icons-material/Compare';
 import CloseIcon from '@mui/icons-material/Close';
+import ModelSelector, { ModelType } from '../components/model-selector';
 
 // Custom keyframes for animations
 const pulse = keyframes`
@@ -105,6 +106,17 @@ const Detect = () => {
   const [currentStepProgress, setCurrentStepProgress] = useState(0);
   const [openModal, setOpenModal] = useState(false);
   const [openComparisonModal, setOpenComparisonModal] = useState(false);
+  const [selectedModel, setSelectedModel] = useState<ModelType>('padim');
+  const [showUploadSection, setShowUploadSection] = useState(true);
+
+  const resetDetection = () => {
+    setSelectedImage(null);
+    setImagePreview('');
+    setResult(null);
+    setError(null);
+    setShowResults(false);
+    setShowUploadSection(true);
+  };
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
@@ -154,13 +166,19 @@ const Detect = () => {
     setError(null);
     setShowResults(false);
     setCurrentStepProgress(0);
+    setShowUploadSection(false);
 
     try {
       const formData = new FormData();
       formData.append('file', selectedImage);
 
-      console.log('Sending request to backend...');
-      const response = await fetch('http://localhost:8000/api/v1/anomaly/detect', {
+      // Determine the endpoint based on the selected model
+      const endpoint = selectedModel === 'padim' 
+        ? 'http://localhost:8000/api/v1/anomaly/detect'
+        : 'http://localhost:8000/api/v1/stfpm/detect';
+
+      console.log(`Sending request to backend using ${selectedModel} model...`);
+      const response = await fetch(endpoint, {
         method: 'POST',
         body: formData,
       });
@@ -238,483 +256,508 @@ const Detect = () => {
   const handleCloseComparisonModal = () => setOpenComparisonModal(false);
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: 'white', pt: 4, pb: 6 }}>
-      <Container maxWidth="lg">
-        <Box sx={{ mb: 6, mt: 4 }}>
-          <Typography 
-            variant="h3" 
-            component="h1" 
-            align="center"
-            gutterBottom
-            sx={{ 
-              fontWeight: 700,
-              color: '#1a237e',
-              textShadow: '2px 2px 4px rgba(0,0,0,0.1)',
-            }}
-          >
-            Detect Anomalies
-          </Typography>
-        </Box>
-
-        {error && (
-          <Fade in={!!error}>
-            <Alert severity="error" sx={{ mb: 4 }}>
-              {error}
-            </Alert>
-          </Fade>
-        )}
-
-        {/* Upload Section */}
-        <Paper
-          elevation={0}
-          sx={{
-            p: 4,
-            mb: 4,
-            border: '2px dashed',
-            borderColor: isDragActive ? '#1a237e' : '#e0e0e0',
-            borderRadius: 2,
-            bgcolor: isDragActive ? 'rgba(26, 35, 126, 0.04)' : 'white',
-            position: 'relative',
-            overflow: 'hidden',
-          }}
-        >
-          <Box
-            {...getRootProps()}
-            sx={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              cursor: 'pointer',
-              position: 'relative',
-              zIndex: 1,
-            }}
-          >
-            <input {...getInputProps()} />
-            <CloudUploadIcon sx={{ fontSize: 48, color: '#1a237e', mb: 2 }} />
-            <Typography variant="h6" align="center" gutterBottom>
-              {isDragActive
-                ? 'Drop the wood surface image here'
-                : 'Drag and drop a wood surface image here, or click to select'}
-            </Typography>
-            <Typography variant="body2" color="text.secondary" align="center">
-              Supported formats: JPEG, JPG, PNG
+    <Container maxWidth="md" sx={{ py: 4 }}>
+      <Box sx={{ minHeight: '100vh', bgcolor: 'white', pt: 4, pb: 6 }}>
+        <Container maxWidth="lg">
+          <Box sx={{ mb: 6, mt: 4 }}>
+            <Typography 
+              variant="h3" 
+              component="h1" 
+              align="center"
+              gutterBottom
+              sx={{ 
+                fontWeight: 700,
+                color: '#1a237e',
+                textShadow: '2px 2px 4px rgba(0,0,0,0.1)',
+              }}
+            >
+              Detect Anomalies
             </Typography>
           </Box>
-        </Paper>
 
-        {/* Preview and Process Section */}
-        {imagePreview && (
-          <Zoom in={!!imagePreview} timeout={500}>
-            <Box sx={{ mb: 4 }}>
-              <Paper
-                elevation={0}
+          {error && (
+            <Fade in={!!error}>
+              <Alert severity="error" sx={{ mb: 4 }}>
+                {error}
+              </Alert>
+            </Fade>
+          )}
+
+          <ModelSelector 
+            selectedModel={selectedModel} 
+            onModelChange={setSelectedModel}
+            disabled={isProcessing}
+          />
+
+          {showUploadSection && (
+            <Paper
+              elevation={0}
+              sx={{
+                p: 4,
+                mb: 4,
+                border: '2px dashed',
+                borderColor: isDragActive ? '#1a237e' : '#e0e0e0',
+                borderRadius: 2,
+                bgcolor: isDragActive ? 'rgba(26, 35, 126, 0.04)' : 'white',
+                position: 'relative',
+                overflow: 'hidden',
+              }}
+            >
+              <Box
+                {...getRootProps()}
                 sx={{
-                  p: 3,
-                  border: '1px solid #e0e0e0',
-                  borderRadius: 2,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  cursor: 'pointer',
                   position: 'relative',
-                  overflow: 'hidden',
+                  zIndex: 1,
                 }}
               >
-                <Box
+                <input {...getInputProps()} />
+                <CloudUploadIcon sx={{ fontSize: 48, color: '#1a237e', mb: 2 }} />
+                <Typography variant="h6" align="center" gutterBottom>
+                  {isDragActive
+                    ? 'Drop the wood surface image here'
+                    : 'Drag and drop a wood surface image here, or click to select'}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" align="center">
+                  Supported formats: JPEG, JPG, PNG
+                </Typography>
+              </Box>
+            </Paper>
+          )}
+
+          {/* Preview and Process Section */}
+          {imagePreview && (
+            <Zoom in={!!imagePreview} timeout={500}>
+              <Box sx={{ mb: 4 }}>
+                <Paper
+                  elevation={0}
                   sx={{
-                    display: 'flex',
-                    gap: 4,
-                    flexDirection: { xs: 'column', md: 'row' },
+                    p: 3,
+                    border: '1px solid #e0e0e0',
+                    borderRadius: 2,
+                    position: 'relative',
+                    overflow: 'hidden',
                   }}
                 >
                   <Box
                     sx={{
-                      flex: 1,
                       display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
+                      gap: 4,
+                      flexDirection: { xs: 'column', md: 'row' },
                     }}
                   >
-                    <Typography variant="h6" gutterBottom>
-                      Selected Image
+                    <Box
+                      sx={{
+                        flex: 1,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                      }}
+                    >
+                      <Typography variant="h6" gutterBottom>
+                        Selected Image
+                      </Typography>
+                      <Box
+                        component="img"
+                        src={imagePreview}
+                        alt="Selected wood surface"
+                        sx={{
+                          width: '100%',
+                          maxWidth: '400px',
+                          height: 'auto',
+                          borderRadius: 1,
+                          mb: 2,
+                          boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
+                          transition: 'all 0.3s ease',
+                          '&:hover': {
+                            transform: 'scale(1.02)',
+                            boxShadow: '0 8px 16px rgba(0,0,0,0.15)',
+                          },
+                        }}
+                      />
+                      <Button
+                        variant="contained"
+                        startIcon={<SendIcon />}
+                        disabled={isProcessing}
+                        onClick={processImage}
+                        sx={{
+                          backgroundColor: '#1a237e',
+                          '&:hover': {
+                            backgroundColor: '#0d47a1',
+                          },
+                        }}
+                      >
+                        {isProcessing ? 'Processing...' : 'Start Detection'}
+                      </Button>
+                    </Box>
+
+                    {/* Processing Steps */}
+                    {isProcessing && (
+                      <Grow in={isProcessing} timeout={800}>
+                        <Box sx={{ flex: 1 }}>
+                          <Typography variant="h6" gutterBottom>
+                            Processing Steps
+                          </Typography>
+                          <Stepper activeStep={activeStep} orientation="vertical">
+                            {steps.map((step, index) => (
+                              <Step key={step.label}>
+                                <StepLabel>
+                                  <Typography 
+                                    sx={{ 
+                                      color: activeStep === index ? '#1a237e' : 'inherit',
+                                      fontWeight: activeStep === index ? 700 : 400,
+                                      transition: 'all 0.3s ease',
+                                      transform: activeStep === index ? 'scale(1.05)' : 'scale(1)',
+                                    }}
+                                  >
+                                    {step.label}
+                                  </Typography>
+                                </StepLabel>
+                                <StepContent>
+                                  {step.subSteps.map((subStep, subIndex) => (
+                                    <Box 
+                                      key={subStep.label} 
+                                      sx={{ 
+                                        mb: 2,
+                                        transition: 'all 0.3s ease',
+                                        transform: activeStep === index && activeSubStep === subIndex ? 'translateX(10px)' : 'translateX(0)',
+                                        opacity: activeStep === index && activeSubStep === subIndex ? 1 : 0.7,
+                                      }}
+                                    >
+                                      <Typography
+                                        variant="body2"
+                                        sx={{
+                                          color: activeStep === index && activeSubStep === subIndex
+                                            ? '#1a237e'
+                                            : 'text.secondary',
+                                          fontWeight: activeStep === index && activeSubStep === subIndex
+                                            ? 600
+                                            : 400,
+                                          display: 'flex',
+                                          alignItems: 'center',
+                                        }}
+                                      >
+                                        {subStep.label}
+                                        {activeStep === index && activeSubStep === subIndex && (
+                                          <CircularProgress
+                                            size={16}
+                                            sx={{ 
+                                              ml: 1, 
+                                              color: '#1a237e',
+                                              animation: `${pulse} 1.5s infinite ease-in-out`,
+                                            }}
+                                          />
+                                        )}
+                                      </Typography>
+                                      <Typography
+                                        variant="body2"
+                                        color="text.secondary"
+                                        sx={{ 
+                                          fontSize: '0.875rem',
+                                          transition: 'all 0.3s ease',
+                                          opacity: activeStep === index && activeSubStep === subIndex ? 1 : 0.7,
+                                        }}
+                                      >
+                                        {subStep.description}
+                                      </Typography>
+                                      {activeStep === index && activeSubStep === subIndex && (
+                                        <LinearProgress
+                                          variant="determinate"
+                                          value={currentStepProgress}
+                                          sx={{
+                                            mt: 1,
+                                            height: 8,
+                                            borderRadius: 4,
+                                            bgcolor: 'rgba(26, 35, 126, 0.1)',
+                                          }}
+                                        />
+                                      )}
+                                    </Box>
+                                  ))}
+                                </StepContent>
+                              </Step>
+                            ))}
+                          </Stepper>
+                          
+                          {/* Overall progress indicator */}
+                          <Box sx={{ mt: 3, position: 'relative' }}>
+                            <Typography variant="body2" color="text.secondary" gutterBottom>
+                              Overall Progress
+                            </Typography>
+                            <LinearProgress 
+                              variant="determinate" 
+                              value={progressValue} 
+                              sx={{ 
+                                height: 10, 
+                                borderRadius: 5,
+                                bgcolor: 'rgba(26, 35, 126, 0.1)',
+                              }} 
+                            />
+                            <Typography 
+                              variant="caption" 
+                              sx={{ 
+                                position: 'absolute', 
+                                right: 0, 
+                                top: 0,
+                                color: '#1a237e',
+                                fontWeight: 600,
+                              }}
+                            >
+                              {progressValue}%
+                            </Typography>
+                          </Box>
+                        </Box>
+                      </Grow>
+                    )}
+
+                    {/* Results Section */}
+                    {showResults && result && (
+                      <Grow in={showResults} timeout={1000}>
+                        <Box sx={{ flex: 1 }}>
+                          <Typography variant="h6" gutterBottom>
+                            Detection Results
+                          </Typography>
+                          
+                          <Paper 
+                            elevation={0} 
+                            sx={{ 
+                              p: 2, 
+                              mb: 2,
+                              bgcolor: 'rgba(26, 35, 126, 0.05)',
+                              borderRadius: 2,
+                              transition: 'all 0.3s ease',
+                              '&:hover': {
+                                bgcolor: 'rgba(26, 35, 126, 0.1)',
+                              },
+                            }}
+                          >
+                            <Typography variant="body1" gutterBottom>
+                              Anomaly Score: <strong>{result.score.toFixed(4)}</strong>
+                            </Typography>
+                            
+                          </Paper>
+                          
+                          <Box sx={{ position: 'relative', mb: 2 }}>
+                            <Box
+                              component="img"
+                              src={`http://localhost:8000${result.result_image}`}
+                              alt="Detection results"
+                              sx={{
+                                width: '100%',
+                                height: 'auto',
+                                borderRadius: 1,
+                                boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
+                                transition: 'all 0.3s ease',
+                                '&:hover': {
+                                  transform: 'scale(1.02)',
+                                  boxShadow: '0 8px 16px rgba(0,0,0,0.15)',
+                                },
+                              }}
+                            />
+                            <Box 
+                              sx={{ 
+                                position: 'absolute', 
+                                top: 10, 
+                                right: 10, 
+                                display: 'flex', 
+                                gap: 1,
+                                bgcolor: 'rgba(255, 255, 255, 0.8)',
+                                borderRadius: 1,
+                                p: 0.5,
+                                boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                              }}
+                            >
+                              <Tooltip title="View fullscreen">
+                                <IconButton 
+                                  size="small" 
+                                  onClick={handleOpenModal}
+                                  sx={{ color: '#1a237e' }}
+                                >
+                                  <FullscreenIcon />
+                                </IconButton>
+                              </Tooltip>
+                              <Tooltip title="Compare with original">
+                                <IconButton 
+                                  size="small" 
+                                  onClick={handleOpenComparisonModal}
+                                  sx={{ color: '#1a237e' }}
+                                >
+                                  <CompareIcon />
+                                </IconButton>
+                              </Tooltip>
+                            </Box>
+                          </Box>
+                        </Box>
+                      </Grow>
+                    )}
+                  </Box>
+                </Paper>
+              </Box>
+            </Zoom>
+          )}
+          
+          {/* Fullscreen Modal */}
+          <Modal
+            open={openModal}
+            onClose={handleCloseModal}
+            aria-labelledby="result-image-modal"
+            aria-describedby="fullscreen-result-image"
+          >
+            <Box sx={modalStyle}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                <Typography variant="h6" component="h2">
+                  Detection Result
+                </Typography>
+                <IconButton onClick={handleCloseModal} size="small">
+                  <CloseIcon />
+                </IconButton>
+              </Box>
+              <Divider sx={{ mb: 2 }} />
+              <Box
+                component="img"
+                src={`http://localhost:8000${result?.result_image}`}
+                alt="Detection results"
+                sx={{
+                  width: '100%',
+                  height: 'auto',
+                  maxHeight: '70vh',
+                  objectFit: 'contain',
+                }}
+              />
+              <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Typography variant="body1">
+                  Anomaly Score: <strong>{result?.score.toFixed(4)}</strong>
+                </Typography>
+                <Button 
+                  variant="outlined" 
+                  size="small" 
+                  onClick={handleCloseModal}
+                  startIcon={<CloseIcon />}
+                >
+                  Close
+                </Button>
+              </Box>
+            </Box>
+          </Modal>
+          
+          {/* Comparison Modal */}
+          <Modal
+            open={openComparisonModal}
+            onClose={handleCloseComparisonModal}
+            aria-labelledby="comparison-modal"
+            aria-describedby="image-comparison"
+          >
+            <Box sx={modalStyle}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                <Typography variant="h6" component="h2">
+                  Image Comparison
+                </Typography>
+                <IconButton onClick={handleCloseComparisonModal} size="small">
+                  <CloseIcon />
+                </IconButton>
+              </Box>
+              <Divider sx={{ mb: 2 }} />
+              <Grid container spacing={2}>
+                <Grid component="div">
+                  <Paper 
+                    elevation={0} 
+                    sx={{ 
+                      p: 2, 
+                      border: '1px solid #e0e0e0',
+                      borderRadius: 2,
+                      height: '100%',
+                      display: 'flex',
+                      flexDirection: 'column',
+                    }}
+                  >
+                    <Typography variant="subtitle1" gutterBottom>
+                      Original Image
                     </Typography>
                     <Box
                       component="img"
                       src={imagePreview}
-                      alt="Selected wood surface"
+                      alt="Original image"
                       sx={{
                         width: '100%',
-                        maxWidth: '400px',
                         height: 'auto',
+                        maxHeight: '60vh',
+                        objectFit: 'contain',
                         borderRadius: 1,
-                        mb: 2,
-                        boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
-                        transition: 'all 0.3s ease',
-                        '&:hover': {
-                          transform: 'scale(1.02)',
-                          boxShadow: '0 8px 16px rgba(0,0,0,0.15)',
-                        },
+                        flexGrow: 1,
                       }}
                     />
-                    <Button
-                      variant="contained"
-                      startIcon={<SendIcon />}
-                      disabled={isProcessing}
-                      onClick={processImage}
+                  </Paper>
+                </Grid>
+                <Grid component="div">
+                  <Paper 
+                    elevation={0} 
+                    sx={{ 
+                      p: 2, 
+                      border: '1px solid #e0e0e0',
+                      borderRadius: 2,
+                      height: '100%',
+                      display: 'flex',
+                      flexDirection: 'column',
+                    }}
+                  >
+                    <Typography variant="subtitle1" gutterBottom>
+                      Detection Result
+                    </Typography>
+                    <Box
+                      component="img"
+                      src={`http://localhost:8000${result?.result_image}`}
+                      alt="Detection results"
                       sx={{
-                        backgroundColor: '#1a237e',
-                        '&:hover': {
-                          backgroundColor: '#0d47a1',
-                        },
+                        width: '100%',
+                        height: 'auto',
+                        maxHeight: '60vh',
+                        objectFit: 'contain',
+                        borderRadius: 1,
+                        flexGrow: 1,
                       }}
-                    >
-                      {isProcessing ? 'Processing...' : 'Start Detection'}
-                    </Button>
-                  </Box>
-
-                  {/* Processing Steps */}
-                  {isProcessing && (
-                    <Grow in={isProcessing} timeout={800}>
-                      <Box sx={{ flex: 1 }}>
-                        <Typography variant="h6" gutterBottom>
-                          Processing Steps
-                        </Typography>
-                        <Stepper activeStep={activeStep} orientation="vertical">
-                          {steps.map((step, index) => (
-                            <Step key={step.label}>
-                              <StepLabel>
-                                <Typography 
-                                  sx={{ 
-                                    color: activeStep === index ? '#1a237e' : 'inherit',
-                                    fontWeight: activeStep === index ? 700 : 400,
-                                    transition: 'all 0.3s ease',
-                                    transform: activeStep === index ? 'scale(1.05)' : 'scale(1)',
-                                  }}
-                                >
-                                  {step.label}
-                                </Typography>
-                              </StepLabel>
-                              <StepContent>
-                                {step.subSteps.map((subStep, subIndex) => (
-                                  <Box 
-                                    key={subStep.label} 
-                                    sx={{ 
-                                      mb: 2,
-                                      transition: 'all 0.3s ease',
-                                      transform: activeStep === index && activeSubStep === subIndex ? 'translateX(10px)' : 'translateX(0)',
-                                      opacity: activeStep === index && activeSubStep === subIndex ? 1 : 0.7,
-                                    }}
-                                  >
-                                    <Typography
-                                      variant="body2"
-                                      sx={{
-                                        color: activeStep === index && activeSubStep === subIndex
-                                          ? '#1a237e'
-                                          : 'text.secondary',
-                                        fontWeight: activeStep === index && activeSubStep === subIndex
-                                          ? 600
-                                          : 400,
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                      }}
-                                    >
-                                      {subStep.label}
-                                      {activeStep === index && activeSubStep === subIndex && (
-                                        <CircularProgress
-                                          size={16}
-                                          sx={{ 
-                                            ml: 1, 
-                                            color: '#1a237e',
-                                            animation: `${pulse} 1.5s infinite ease-in-out`,
-                                          }}
-                                        />
-                                      )}
-                                    </Typography>
-                                    <Typography
-                                      variant="body2"
-                                      color="text.secondary"
-                                      sx={{ 
-                                        fontSize: '0.875rem',
-                                        transition: 'all 0.3s ease',
-                                        opacity: activeStep === index && activeSubStep === subIndex ? 1 : 0.7,
-                                      }}
-                                    >
-                                      {subStep.description}
-                                    </Typography>
-                                    {activeStep === index && activeSubStep === subIndex && (
-                                      <LinearProgress
-                                        variant="determinate"
-                                        value={currentStepProgress}
-                                        sx={{
-                                          mt: 1,
-                                          height: 8,
-                                          borderRadius: 4,
-                                          bgcolor: 'rgba(26, 35, 126, 0.1)',
-                                        }}
-                                      />
-                                    )}
-                                  </Box>
-                                ))}
-                              </StepContent>
-                            </Step>
-                          ))}
-                        </Stepper>
-                        
-                        {/* Overall progress indicator */}
-                        <Box sx={{ mt: 3, position: 'relative' }}>
-                          <Typography variant="body2" color="text.secondary" gutterBottom>
-                            Overall Progress
-                          </Typography>
-                          <LinearProgress 
-                            variant="determinate" 
-                            value={progressValue} 
-                            sx={{ 
-                              height: 10, 
-                              borderRadius: 5,
-                              bgcolor: 'rgba(26, 35, 126, 0.1)',
-                            }} 
-                          />
-                          <Typography 
-                            variant="caption" 
-                            sx={{ 
-                              position: 'absolute', 
-                              right: 0, 
-                              top: 0,
-                              color: '#1a237e',
-                              fontWeight: 600,
-                            }}
-                          >
-                            {progressValue}%
-                          </Typography>
-                        </Box>
-                      </Box>
-                    </Grow>
-                  )}
-
-                  {/* Results Section */}
-                  {showResults && result && (
-                    <Grow in={showResults} timeout={1000}>
-                      <Box sx={{ flex: 1 }}>
-                        <Typography variant="h6" gutterBottom>
-                          Detection Results
-                        </Typography>
-                        
-                        <Paper 
-                          elevation={0} 
-                          sx={{ 
-                            p: 2, 
-                            mb: 2,
-                            bgcolor: 'rgba(26, 35, 126, 0.05)',
-                            borderRadius: 2,
-                            transition: 'all 0.3s ease',
-                            '&:hover': {
-                              bgcolor: 'rgba(26, 35, 126, 0.1)',
-                            },
-                          }}
-                        >
-                          <Typography variant="body1" gutterBottom>
-                            Anomaly Score: <strong>{result.score.toFixed(4)}</strong>
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary">
-                            {result.score > 0.5 ? 'Anomaly detected' : 'No significant anomalies detected'}
-                          </Typography>
-                        </Paper>
-                        
-                        <Box sx={{ position: 'relative', mb: 2 }}>
-                          <Box
-                            component="img"
-                            src={`http://localhost:8000${result.result_image}`}
-                            alt="Detection results"
-                            sx={{
-                              width: '100%',
-                              height: 'auto',
-                              borderRadius: 1,
-                              boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
-                              transition: 'all 0.3s ease',
-                              '&:hover': {
-                                transform: 'scale(1.02)',
-                                boxShadow: '0 8px 16px rgba(0,0,0,0.15)',
-                              },
-                            }}
-                          />
-                          <Box 
-                            sx={{ 
-                              position: 'absolute', 
-                              top: 10, 
-                              right: 10, 
-                              display: 'flex', 
-                              gap: 1,
-                              bgcolor: 'rgba(255, 255, 255, 0.8)',
-                              borderRadius: 1,
-                              p: 0.5,
-                              boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                            }}
-                          >
-                            <Tooltip title="View fullscreen">
-                              <IconButton 
-                                size="small" 
-                                onClick={handleOpenModal}
-                                sx={{ color: '#1a237e' }}
-                              >
-                                <FullscreenIcon />
-                              </IconButton>
-                            </Tooltip>
-                            <Tooltip title="Compare with original">
-                              <IconButton 
-                                size="small" 
-                                onClick={handleOpenComparisonModal}
-                                sx={{ color: '#1a237e' }}
-                              >
-                                <CompareIcon />
-                              </IconButton>
-                            </Tooltip>
-                          </Box>
-                        </Box>
-                      </Box>
-                    </Grow>
-                  )}
-                </Box>
-              </Paper>
+                    />
+                  </Paper>
+                </Grid>
+              </Grid>
+              <Box sx={{ mt: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Typography variant="body1">
+                  Anomaly Score: <strong>{result?.score.toFixed(4)}</strong>
+                </Typography>
+                <Button 
+                  variant="outlined" 
+                  size="small" 
+                  onClick={handleCloseComparisonModal}
+                  startIcon={<CloseIcon />}
+                >
+                  Close
+                </Button>
+              </Box>
             </Box>
-          </Zoom>
-        )}
-        
-        {/* Fullscreen Modal */}
-        <Modal
-          open={openModal}
-          onClose={handleCloseModal}
-          aria-labelledby="result-image-modal"
-          aria-describedby="fullscreen-result-image"
-        >
-          <Box sx={modalStyle}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-              <Typography variant="h6" component="h2">
-                Detection Result
-              </Typography>
-              <IconButton onClick={handleCloseModal} size="small">
-                <CloseIcon />
-              </IconButton>
-            </Box>
-            <Divider sx={{ mb: 2 }} />
-            <Box
-              component="img"
-              src={`http://localhost:8000${result?.result_image}`}
-              alt="Detection results"
-              sx={{
-                width: '100%',
-                height: 'auto',
-                maxHeight: '70vh',
-                objectFit: 'contain',
-              }}
-            />
-            <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Typography variant="body1">
-                Anomaly Score: <strong>{result?.score.toFixed(4)}</strong>
-              </Typography>
-              <Button 
-                variant="outlined" 
-                size="small" 
-                onClick={handleCloseModal}
-                startIcon={<CloseIcon />}
+          </Modal>
+
+          {/* Results Section */}
+          {showResults && result && (
+            <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
+              <Button
+                variant="contained"
+                onClick={resetDetection}
+                sx={{
+                  backgroundColor: '#1a237e',
+                  '&:hover': {
+                    backgroundColor: '#0d47a1',
+                  },
+                }}
               >
-                Close
+                Try Another Image
               </Button>
             </Box>
-          </Box>
-        </Modal>
-        
-        {/* Comparison Modal */}
-        <Modal
-          open={openComparisonModal}
-          onClose={handleCloseComparisonModal}
-          aria-labelledby="comparison-modal"
-          aria-describedby="image-comparison"
-        >
-          <Box sx={modalStyle}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-              <Typography variant="h6" component="h2">
-                Image Comparison
-              </Typography>
-              <IconButton onClick={handleCloseComparisonModal} size="small">
-                <CloseIcon />
-              </IconButton>
-            </Box>
-            <Divider sx={{ mb: 2 }} />
-            <Grid container spacing={2}>
-              <Grid component="div">
-                <Paper 
-                  elevation={0} 
-                  sx={{ 
-                    p: 2, 
-                    border: '1px solid #e0e0e0',
-                    borderRadius: 2,
-                    height: '100%',
-                    display: 'flex',
-                    flexDirection: 'column',
-                  }}
-                >
-                  <Typography variant="subtitle1" gutterBottom>
-                    Original Image
-                  </Typography>
-                  <Box
-                    component="img"
-                    src={imagePreview}
-                    alt="Original image"
-                    sx={{
-                      width: '100%',
-                      height: 'auto',
-                      maxHeight: '60vh',
-                      objectFit: 'contain',
-                      borderRadius: 1,
-                      flexGrow: 1,
-                    }}
-                  />
-                </Paper>
-              </Grid>
-              <Grid component="div">
-                <Paper 
-                  elevation={0} 
-                  sx={{ 
-                    p: 2, 
-                    border: '1px solid #e0e0e0',
-                    borderRadius: 2,
-                    height: '100%',
-                    display: 'flex',
-                    flexDirection: 'column',
-                  }}
-                >
-                  <Typography variant="subtitle1" gutterBottom>
-                    Detection Result
-                  </Typography>
-                  <Box
-                    component="img"
-                    src={`http://localhost:8000${result?.result_image}`}
-                    alt="Detection results"
-                    sx={{
-                      width: '100%',
-                      height: 'auto',
-                      maxHeight: '60vh',
-                      objectFit: 'contain',
-                      borderRadius: 1,
-                      flexGrow: 1,
-                    }}
-                  />
-                </Paper>
-              </Grid>
-            </Grid>
-            <Box sx={{ mt: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Typography variant="body1">
-                Anomaly Score: <strong>{result?.score.toFixed(4)}</strong>
-              </Typography>
-              <Button 
-                variant="outlined" 
-                size="small" 
-                onClick={handleCloseComparisonModal}
-                startIcon={<CloseIcon />}
-              >
-                Close
-              </Button>
-            </Box>
-          </Box>
-        </Modal>
-      </Container>
-    </Box>
+          )}
+        </Container>
+      </Box>
+    </Container>
   );
 };
 

@@ -1,7 +1,4 @@
-import { Box, Container, Typography, Button, Grid } from '@mui/material';
-import { Link as RouterLink } from 'react-router-dom';
-import TrendingUpIcon from '@mui/icons-material/TrendingUp';
-import TimelineIcon from '@mui/icons-material/Timeline';
+import { Box, Container, Typography, Grid } from '@mui/material';
 import ChatbotAnimation from '../components/chatbot-animation';
 
 const Home = () => {
