@@ -2,10 +2,12 @@ import { Box, Container, Typography, Button, Grid } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TimelineIcon from '@mui/icons-material/Timeline';
+import ChatbotAnimation from '../components/chatbot-animation';
 
 const Home = () => {
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: 'white' }}>
+      {/* Chatbot Animation Section */}
       {/* Hero Section */}
       <Box sx={{ py: { xs: 8, md: 12 } }}>
         <Container maxWidth="lg">
@@ -35,67 +37,12 @@ const Home = () => {
               >
                 Advanced unsupervised learning techniques for detecting defects and anomalies in wood surfaces using PaDIM and STFPM models
               </Typography>
-              <Box sx={{ display: 'flex', gap: 2 }}>
-                <Button
-                  variant="contained"
-                  size="large"
-                  component={RouterLink}
-                  to="/detect"
-                  startIcon={<TrendingUpIcon />}
-                  sx={{
-                    backgroundColor: '#1a237e',
-                    color: 'white',
-                    padding: '12px 32px',
-                    fontSize: '1.1rem',
-                    '&:hover': {
-                      backgroundColor: '#0d47a1',
-                    },
-                  }}
-                >
-                  Start Detection
-                </Button>
-                <Button
-                  variant="outlined"
-                  size="large"
-                  startIcon={<TimelineIcon />}
-                  sx={{
-                    borderColor: '#1a237e',
-                    color: '#1a237e',
-                    padding: '12px 32px',
-                    fontSize: '1.1rem',
-                    '&:hover': {
-                      borderColor: '#0d47a1',
-                      backgroundColor: 'rgba(26, 35, 126, 0.04)',
-                    },
-                  }}
-                >
-                  Learn More
-                </Button>
-              </Box>
+
+      <ChatbotAnimation />
+
+        
             </Grid>
-            <Grid item xs={12} md={6}>
-              <Box
-                sx={{
-                  display: 'flex',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  height: '100%',
-                }}
-              >
-                <Box
-                  component="img"
-                  src="/result.jpeg"
-                  alt="Wood surface anomaly detection result showing original image, binary mask, heatmap, and annotated defects"
-                  sx={{
-                    width: '100%',
-                    maxWidth: '600px',
-                    height: 'auto',
-                    borderRadius: '8px',
-                    boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
-                  }}
-                />
-              </Box>
-            </Grid>
+
           </Grid>
         </Container>
       </Box>
