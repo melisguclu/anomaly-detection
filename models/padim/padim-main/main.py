@@ -18,7 +18,7 @@ import matplotlib
 import torch
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
-from torchvision.models import resnet18
+from torchvision.models import resnet50
 import datasets.mvtec as mvtec
 
 use_cuda = torch.cuda.is_available()
@@ -37,9 +37,9 @@ def main():
     args = parse_args()
 
     # Model setup
-    model = resnet18(pretrained=True, progress=True)
-    t_d = 448
-    d = 100
+    model = resnet50(pretrained=True, progress=True)
+    t_d = 1664  # toplam çıkış boyutu (layer1 + layer2 + layer3)
+    d = 550 
     model.to(device)
     model.eval()
 
@@ -99,7 +99,7 @@ def main():
             for i in range(H * W):
                 cov[:, :, i] = np.cov(embedding_vectors[:, :, i].numpy(), rowvar=False) + 0.01 * I
             with open(train_feature_filepath, 'wb') as f:
-                torch.save((mean, cov), f)
+                torch.save((mean, cov), f, pickle_protocol=pickle.HIGHEST_PROTOCOL)
             train_mean, train_cov = mean, cov    
         else:
             print(f'load train set feature from: {train_feature_filepath}')
@@ -171,50 +171,78 @@ def main():
         # IoU and F1 calculation per image
         from sklearn.metrics import f1_score, jaccard_score
         import pandas as pd
+        from skimage import measure
 
-        iou_list = []
-        f1_list = []
-        true_classes = []
+        def remove_small_regions(mask, min_size=100):
+            labels = measure.label(mask)
+            for region in measure.regionprops(labels):
+                if region.area < min_size:
+                    for coord in region.coords:
+                        mask[coord[0], coord[1]] = 0
+            return mask
+
+        # 1. IoU için optimal threshold belirle
+        best_iou = 0
+        best_threshold = 0
+        for t in np.linspace(0.01, 0.99, 300):
+            iou_scores = []
+            for i in range(len(gt_mask_list)):
+                gt = (gt_mask_list[i].squeeze().flatten() > 0.5).astype(np.uint8)
+                pred = (scores[i].flatten() > t).astype(np.uint8)
+                if gt.sum() > 0:
+                    iou = jaccard_score(gt, pred, zero_division=0)
+                    iou_scores.append(iou)
+            mean_iou = np.mean(iou_scores)
+            if mean_iou > best_iou:
+                best_iou = mean_iou
+                best_threshold = t
+
+        print(f"[INFO] IoU-optimal threshold: {best_threshold:.2f} — Max IoU: {best_iou:.4f}")
+
+        # 2. F1 ve IoU hesapla (good olanlar için NaN ata), FP oranını da ekle
+        iou_list, f1_list, fp_list, true_classes = [], [], [], []
 
         for i in range(len(gt_mask_list)):
             gt = (gt_mask_list[i].squeeze().flatten() > 0.5).astype(np.uint8)
-            pred = scores[i].flatten()
-            pred_mask = (pred > threshold).astype(np.uint8)
+            pred_mask = (scores[i].flatten() > best_threshold).astype(np.uint8)
+            pred_mask = remove_small_regions(pred_mask.reshape(224, 224)).flatten()
 
-            if gt.sum() > 0:
+            if gt.sum() > 0:  # defect sınıfı
                 iou = jaccard_score(gt, pred_mask, zero_division=0)
                 f1_val = f1_score(gt, pred_mask, zero_division=0)
+                fp_rate = np.nan
                 true_classes.append("defect")
-            else:
-                iou = jaccard_score(gt, pred_mask, zero_division=0)
-                f1_val = f1_score(gt, pred_mask, zero_division=0)
+            else:  # good sınıfı
+                iou = np.nan
+                f1_val = np.nan
+                fp_rate = pred_mask.sum() / pred_mask.size  # yanlışlıkla ne kadar yer anomali dedi
                 true_classes.append("good")
 
             iou_list.append(iou)
             f1_list.append(f1_val)
+            fp_list.append(fp_rate)
 
+        # 3. CSV çıktısı
         df = pd.DataFrame({
             "Image Index": list(range(len(gt_mask_list))),
             "True Class": true_classes,
             "F1 Score": f1_list,
-            "IoU Score": iou_list
+            "IoU Score": iou_list,
+            "False Positive Rate": fp_list
         })
         df.to_csv(os.path.join(args.save_path, f'prediction_metrics.csv'), index=False)
 
-        save_dir = os.path.join(args.save_path, f'pictures_{args.arch}')
-        os.makedirs(save_dir, exist_ok=True)
-        plot_fig(test_imgs, scores, gt_mask_list, threshold, save_dir, class_name)
+        # 4. Özet çıktı
+        valid_iou = [x for x in iou_list if not np.isnan(x)]
+        valid_f1 = [x for x in f1_list if not np.isnan(x)]
+        mean_fp = np.nanmean(fp_list)
 
-    print(f'Average ROCAUC: {np.mean(total_roc_auc):.3f}')
-    fig_img_rocauc.title.set_text(f'Average image ROCAUC: {np.mean(total_roc_auc):.3f}')
-    fig_img_rocauc.legend(loc="lower right")
+        print(f"[DEFECT] Avg F1 Score: {np.mean(valid_f1):.4f}")
+        print(f"[DEFECT] Avg IoU Score: {np.mean(valid_iou):.4f}")
+        print(f"[GOOD] Avg False Positive Rate: {mean_fp:.4f}")
 
-    print(f'Average pixel ROCUAC: {np.mean(total_pixel_roc_auc):.3f}')
-    fig_pixel_rocauc.title.set_text(f'Average pixel ROCAUC: {np.mean(total_pixel_roc_auc):.3f}')
-    fig_pixel_rocauc.legend(loc="lower right")
-
-    fig.tight_layout()
-    fig.savefig(os.path.join(args.save_path, 'roc_curve.png'), dpi=100)
+        fig.tight_layout()
+        fig.savefig(os.path.join(args.save_path, 'roc_curve.png'), dpi=100)
 
 
 def plot_fig(test_img, scores, gts, threshold, save_dir, class_name):
