@@ -49,27 +49,23 @@ const pulse = keyframes`
 // Processing steps
 const steps = [
   {
-    label: '🔍 Preprocessing',
+    label: 'Preprocessing',
     subSteps: [
-      { label: 'Background Removal', description: 'Removes the background to focus on the wood surface only.' },
       { label: 'Image Normalization', description: 'Rescales pixel values to the range [0,1].' },
-      { label: 'Image Resizing', description: 'Resizes all images to 256x256 pixels.' }
     ]
   },
   {
-    label: '🧠 Unsupervised Model Inference',
+    label: 'Unsupervised Model Inference',
     subSteps: [
-      { label: 'Feature Extraction', description: 'Extracts deep features from the input image.' },
-      { label: 'Anomaly Scoring', description: 'Calculates an anomaly score for the input image.' },
       { label: 'Anomaly Segmentation', description: 'Generates a mask highlighting potential defects.' }
     ]
   },
   {
-    label: '✅ Postprocessing & Evaluation',
+    label: 'Postprocessing & Evaluation',
     subSteps: [
       { label: 'Thresholding', description: 'Applies a threshold to the anomaly score to classify image as normal or defective.' },
       { label: 'Comparison with Ground Truth', description: 'Compares the predicted mask with the ground-truth mask.' },
-      { label: 'Metric Calculation', description: 'Calculates performance metrics such as F1 Score and IoU.' }
+      
     ]
   }
 ];
@@ -173,9 +169,15 @@ const Detect = () => {
       formData.append('file', selectedImage);
 
       // Determine the endpoint based on the selected model
-      const endpoint = selectedModel === 'padim' 
-        ? 'http://localhost:8000/api/v1/anomaly/detect'
-        : 'http://localhost:8000/api/v1/stfpm/detect';
+      let endpoint = '';
+      if (selectedModel === 'padim') {
+        endpoint = 'http://localhost:8000/api/v1/anomaly/detect';
+      } else if (selectedModel === 'stfpm') {
+        endpoint = 'http://localhost:8000/api/v1/stfpm/detect';
+      } else if (selectedModel === 'efficientad') {
+        endpoint = 'http://localhost:8000/api/v1/efficientad/detect';
+      }
+      
 
       console.log(`Sending request to backend using ${selectedModel} model...`);
       const response = await fetch(endpoint, {
@@ -257,7 +259,7 @@ const Detect = () => {
 
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>
-      <Box sx={{ minHeight: '100vh', bgcolor: 'white', pt: 4, pb: 6 }}>
+      <Box sx={{ pt: 4, pb: 6 }}>
         <Container maxWidth="lg">
           <Box sx={{ mb: 6, mt: 4 }}>
             <Typography 
@@ -726,6 +728,12 @@ const Detect = () => {
                 <Typography variant="body1">
                   Anomaly Score: <strong>{result?.score.toFixed(4)}</strong>
                 </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {result?.score && result.score > 0.6
+                    ? '⚠️ Likely Defective'
+                    : '✅ Likely Normal'}
+                </Typography>
+
                 <Button 
                   variant="outlined" 
                   size="small" 

@@ -26,6 +26,8 @@ const ModelSelector = ({ selectedModel, onModelChange, disabled = false }: Model
       >
         <MenuItem value="padim">PaDIM</MenuItem>
         <MenuItem value="stfpm">STFPM</MenuItem>
+        <MenuItem value="efficientad">EfficientAD</MenuItem>
+        
       </Select>
     </FormControl>
   );

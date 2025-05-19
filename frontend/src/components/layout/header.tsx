@@ -22,7 +22,8 @@ const Header = () => {
       <AppBar 
         position="fixed" 
         sx={{ 
-          backgroundColor: '#1a237e',
+          backgroundColor: 'rgba(255, 255, 255, 0.95)',
+          backdropFilter: 'blur(8px)',
           boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
         }}
       >
@@ -36,12 +37,9 @@ const Header = () => {
               sx={{
                 flexGrow: 1,
                 textDecoration: 'none',
-                color: 'white',
                 fontWeight: 'bold',
                 letterSpacing: '0.5px',
-                '&:hover': {
-                  color: '#90caf9',
-                },
+                color: '#1a237e',
               }}
             >
               Anomaly Detect
@@ -51,10 +49,8 @@ const Header = () => {
                 component={RouterLink}
                 to="/padim"
                 sx={{
-                  color: 'white',
-                  '&:hover': {
-                    color: '#90caf9',
-                  },
+                fontWeight: 'bold',
+                  color: '#1a237e',
                 }}
               >
                 PaDIM
@@ -63,14 +59,25 @@ const Header = () => {
                 component={RouterLink}
                 to="/stfpm"
                 sx={{
-                  color: 'white',
-                  '&:hover': {
-                    color: '#90caf9',
-                  },
+                fontWeight: 'bold',
+                  color: '#1a237e',
                 }}
               >
                 STFPM
               </Button>
+              <Button
+
+                component={RouterLink}
+                to="/efficientad"
+                sx={{
+                  fontWeight: 'bold',
+                  color: '#1a237e',
+                }}
+              >
+                EfficientAD
+              </Button>
+              
+
               <Button
                 variant="contained"
                 component={RouterLink}

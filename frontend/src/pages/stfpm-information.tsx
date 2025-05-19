@@ -1,120 +1,50 @@
-import { Container, Typography, Box, Paper, Grid } from '@mui/material';
-import InfoIcon from '@mui/icons-material/Info';
+import ModelInformationLayout from '../components/model-information-layout';
 
 const STFPM = () => {
-  return (
-    <Box sx={{ 
-      minHeight: '100vh', 
-      bgcolor: '#f5f5f5',
-      pt: 8,
-      pb: 12,
-    }}>
-      <Container maxWidth="lg">
-        <Box sx={{ textAlign: 'center', mb: 8 }}>
-          <Typography 
-            variant="h2" 
-            component="h1" 
-            gutterBottom
-            sx={{ 
-              fontWeight: 700,
-              color: '#1a237e',
-            }}
-          >
-            STFPM Model
-          </Typography>
-          <Typography 
-            variant="h6" 
-            color="text.secondary"
-            sx={{ maxWidth: '800px', mx: 'auto', mb: 4 }}
-          >
-            Student-Teacher Feature Pyramid Matching for Industrial Anomaly Detection
-          </Typography>
-        </Box>
+  const benefitsData = [
+    {
+      title: "No Need for Defect Labels",
+      description: "STFPM requires only normal (non-defective) images for training."
+    },
+    {
+      title: "High Accuracy",
+      description: "The model achieves excellent results in anomaly segmentation, measured by metrics like F1 score and IoU."
+    },
+    {
+      title: "Pixel-Level Localization",
+      description: "Unlike classification-only models, STFPM highlights where the anomaly is."
+    },
+    {
+      title: "Easy to Integrate",
+      description: "Based on widely used deep learning frameworks (e.g., PyTorch), making it easy to adapt and deploy."
+    }
+  ];
 
-        <Grid container spacing={4}>
-          <Grid item xs={12} md={6}>
-            <Paper
-              elevation={2}
-              sx={{
-                p: 4,
-                height: '100%',
-                display: 'flex',
-                flexDirection: 'column',
-                backgroundColor: 'white',
-              }}
-            >
-              <Typography variant="h5" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
-                Overview
-              </Typography>
-              <Typography color="text.secondary" sx={{ lineHeight: 1.8, mb: 3 }}>
-                STFPM is an innovative approach that uses a student-teacher network architecture with feature pyramid matching 
-                for detecting anomalies in industrial images. It combines the benefits of knowledge distillation with multi-scale feature analysis.
-              </Typography>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <InfoIcon sx={{ mr: 1, color: '#1a237e' }} />
-                <Typography variant="subtitle1" sx={{ fontWeight: 500 }}>
-                  Key Features
-                </Typography>
-              </Box>
-              <Typography component="ul" sx={{ pl: 2, mb: 3 }}>
-                <Typography component="li" sx={{ mb: 1 }}>
-                  Student-teacher network architecture
-                </Typography>
-                <Typography component="li" sx={{ mb: 1 }}>
-                  Multi-scale feature pyramid matching
-                </Typography>
-                <Typography component="li" sx={{ mb: 1 }}>
-                  Efficient anomaly detection
-                </Typography>
-              </Typography>
-            </Paper>
-          </Grid>
-          <Grid item xs={12} md={6}>
-            <Paper
-              elevation={2}
-              sx={{
-                p: 4,
-                height: '100%',
-                display: 'flex',
-                flexDirection: 'column',
-                backgroundColor: 'white',
-              }}
-            >
-              <Typography variant="h5" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
-                Technical Details
-              </Typography>
-              <Box sx={{ mb: 3 }}>
-                <Typography variant="subtitle1" sx={{ fontWeight: 500, mb: 1 }}>
-                  Architecture
-                </Typography>
-                <Typography color="text.secondary" sx={{ lineHeight: 1.8 }}>
-                  The model employs a teacher network pre-trained on ImageNet and a student network that learns 
-                  to match the teacher's feature pyramid representations.
-                </Typography>
-              </Box>
-              <Box sx={{ mb: 3 }}>
-                <Typography variant="subtitle1" sx={{ fontWeight: 500, mb: 1 }}>
-                  Performance
-                </Typography>
-                <Typography color="text.secondary" sx={{ lineHeight: 1.8 }}>
-                  STFPM demonstrates superior performance in detecting various types of anomalies, 
-                  with high accuracy and low computational overhead.
-                </Typography>
-              </Box>
-              <Box>
-                <Typography variant="subtitle1" sx={{ fontWeight: 500, mb: 1 }}>
-                  Applications
-                </Typography>
-                <Typography color="text.secondary" sx={{ lineHeight: 1.8 }}>
-                  Suitable for industrial quality control, defect detection in manufacturing, 
-                  and real-time anomaly monitoring.
-                </Typography>
-              </Box>
-            </Paper>
-          </Grid>
-        </Grid>
-      </Container>
-    </Box>
+  const keyComponents = [
+    {
+      title: "Feature Pyramid Matching",
+      description: "Features from multiple levels (layers) of the neural network are extracted and compared. This enables detection of both low-level texture anomalies and high-level structural inconsistencies."
+    },
+    {
+      title: "Anomaly Score",
+      description: "The difference between the teacher and student feature embeddings is used to calculate a pixel-wise anomaly score."
+    },
+    {
+      title: "Segmentation Mask",
+      description: "A heatmap highlighting anomalous areas is produced, helping localize defects visually."
+    }
+  ];
+
+  return (
+    <ModelInformationLayout 
+      modelName="STFPM"
+      modelSubtitle="Student-Teacher Feature Pyramid Matching for Advanced Anomaly Detection"
+      modelDescription="STFPM (Student-Teacher Feature Pyramid Matching) is an unsupervised anomaly detection and localization model designed for identifying surface defects, particularly effective on visual industrial datasets such as wood textures. It leverages a pre-trained convolutional neural network to learn normal image representations without requiring labeled anomaly data."
+      modelArchitectureImage="/STFPM.png"
+      howItWorksText="The STFPM framework consists of two networks: a teacher and a student. Both networks share the same architecture (typically ResNet or similar), but only the teacher is pre-trained and frozen. During training, the student network attempts to mimic the feature representations of the teacher using only normal samples. Because the student never sees defective data, it fails to reproduce feature representations accurately when presented with anomalous regions at test time."
+      keyComponents={keyComponents}
+      benefits={benefitsData}
+    />
   );
 };
 

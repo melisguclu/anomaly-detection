@@ -1,121 +1,54 @@
-
-import { Container, Typography, Box, Paper, Grid } from '@mui/material';
-import InfoIcon from '@mui/icons-material/Info';
+import ModelInformationLayout from '../components/model-information-layout';
 
 const PaDIM = () => {
-  return (
-    <Box sx={{ 
-      minHeight: '100vh', 
-      bgcolor: '#f5f5f5',
-      pt: 8,
-      pb: 12,
-    }}>
-      <Container maxWidth="lg">
-        <Box sx={{ textAlign: 'center', mb: 8 }}>
-          <Typography 
-            variant="h2" 
-            component="h1" 
-            gutterBottom
-            sx={{ 
-              fontWeight: 700,
-              color: '#1a237e',
-            }}
-          >
-            PaDIM Model
-          </Typography>
-          <Typography 
-            variant="h6" 
-            color="text.secondary"
-            sx={{ maxWidth: '800px', mx: 'auto', mb: 4 }}
-          >
-            Patch Distribution Modeling for Industrial Anomaly Detection
-          </Typography>
-        </Box>
+  const benefitsData = [
+    {
+      title: "Pre-trained Features",
+      description: "Leverages strong representations from networks like ResNet without needing fine-tuning."
+    },
+    {
+      title: "Local Patch Modeling",
+      description: "Models the distribution of features at each patch location, enabling fine-grained anomaly localization."
+    },
+    {
+      title: "Statistical Rigor",
+      description: "Uses well-understood probabilistic distance metrics (Mahalanobis) to detect deviations."
+    },
+    {
+      title: "Label-Free Training",
+      description: "Requires only normal data for training — no need for defect labels."
+    }
+  ];
 
-        <Grid container spacing={4}>
-          <Grid item xs={12} md={6}>
-            <Paper
-              elevation={2}
-              sx={{
-                p: 4,
-                height: '100%',
-                display: 'flex',
-                flexDirection: 'column',
-                backgroundColor: 'white',
-              }}
-            >
-              <Typography variant="h5" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
-                Overview
-              </Typography>
-              <Typography color="text.secondary" sx={{ lineHeight: 1.8, mb: 3 }}>
-                PaDIM is a novel approach for industrial anomaly detection that leverages patch distribution modeling. 
-                It's particularly effective for detecting defects in industrial images by analyzing the distribution of image patches.
-              </Typography>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <InfoIcon sx={{ mr: 1, color: '#1a237e' }} />
-                <Typography variant="subtitle1" sx={{ fontWeight: 500 }}>
-                  Key Features
-                </Typography>
-              </Box>
-              <Typography component="ul" sx={{ pl: 2, mb: 3 }}>
-                <Typography component="li" sx={{ mb: 1 }}>
-                  Patch-based analysis for detailed defect detection
-                </Typography>
-                <Typography component="li" sx={{ mb: 1 }}>
-                  Distribution modeling for robust anomaly detection
-                </Typography>
-                <Typography component="li" sx={{ mb: 1 }}>
-                  Efficient processing of industrial images
-                </Typography>
-              </Typography>
-            </Paper>
-          </Grid>
-          <Grid item xs={12} md={6}>
-            <Paper
-              elevation={2}
-              sx={{
-                p: 4,
-                height: '100%',
-                display: 'flex',
-                flexDirection: 'column',
-                backgroundColor: 'white',
-              }}
-            >
-              <Typography variant="h5" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
-                Technical Details
-              </Typography>
-              <Box sx={{ mb: 3 }}>
-                <Typography variant="subtitle1" sx={{ fontWeight: 500, mb: 1 }}>
-                  Architecture
-                </Typography>
-                <Typography color="text.secondary" sx={{ lineHeight: 1.8 }}>
-                  The model uses a pre-trained backbone network to extract features from image patches, 
-                  followed by a distribution modeling module that learns the normal pattern distribution.
-                </Typography>
-              </Box>
-              <Box sx={{ mb: 3 }}>
-                <Typography variant="subtitle1" sx={{ fontWeight: 500, mb: 1 }}>
-                  Performance
-                </Typography>
-                <Typography color="text.secondary" sx={{ lineHeight: 1.8 }}>
-                  PaDIM achieves state-of-the-art performance on various industrial datasets, 
-                  with high accuracy in defect detection and low false positive rates.
-                </Typography>
-              </Box>
-              <Box>
-                <Typography variant="subtitle1" sx={{ fontWeight: 500, mb: 1 }}>
-                  Applications
-                </Typography>
-                <Typography color="text.secondary" sx={{ lineHeight: 1.8 }}>
-                  Ideal for quality control in manufacturing, surface defect detection, 
-                  and industrial inspection tasks.
-                </Typography>
-              </Box>
-            </Paper>
-          </Grid>
-        </Grid>
-      </Container>
-    </Box>
+  const keyComponents = [
+    {
+      title: "Pre-trained CNN Backbone",
+      description: "Features are extracted from multiple layers of a CNN (e.g., ResNet-18), allowing both low-level and high-level characteristics to be captured."
+    },
+    {
+      title: "Per-Patch Embedding Distribution",
+      description: "For each spatial location (i,j), PaDiM computes the mean vector (μᵢⱼ) and covariance matrix (Σᵢⱼ) across all normal training embeddings."
+    },
+    {
+      title: "Anomaly Score via Mahalanobis Distance",
+      description: "During testing, the Mahalanobis distance between the test patch and the learned Gaussian parameters (μᵢⱼ, Σᵢⱼ) is used to generate an anomaly map."
+    },
+    {
+      title: "Anomaly Heatmap",
+      description: "The resulting pixel-wise scores are visualized as a heatmap highlighting potential defects."
+    }
+  ];
+
+  return (
+    <ModelInformationLayout 
+      modelName="PaDiM"
+      modelSubtitle="Patch Distribution Modeling for Advanced Anomaly Detection"
+      modelDescription="PaDiM (Patch Distribution Modeling) is a powerful unsupervised anomaly detection method that models the distribution of normal features extracted from a pre-trained convolutional neural network (CNN). It is particularly effective in detecting subtle anomalies in industrial inspection tasks, such as texture or structural defects."
+      modelArchitectureImage="/padim.png"
+      howItWorksText="PaDiM computes multivariate Gaussian distributions for each spatial location in the feature maps of a pre-trained CNN using only normal (defect-free) images. These Gaussian models represent the normal patterns for each patch in the image. At inference time, PaDiM compares the extracted features of a test image with the corresponding learned Gaussian distribution using Mahalanobis distance. If the distance is high, it indicates that the patch is likely anomalous."
+      keyComponents={keyComponents}
+      benefits={benefitsData}
+    />
   );
 };
 
