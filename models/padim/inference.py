@@ -3,7 +3,7 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 from torchvision import transforms
-from torchvision.models import resnet50
+from torchvision.models import resnet50, ResNet50_Weights
 from scipy.ndimage import gaussian_filter
 from scipy.spatial.distance import mahalanobis
 from PIL import Image
@@ -21,7 +21,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 logger.info(f"Using device: {device}")
 
 # model ve hook
-model = resnet50(pretrained=True).to(device).eval()
+model = resnet50(weights=ResNet50_Weights.IMAGENET1K_V1).to(device).eval()
 
 def embedding_concat(x, y):
     B, C1, H1, W1 = x.size()
@@ -38,7 +38,7 @@ def embedding_concat(x, y):
 
 # sabit parametreler (ResNet50)
 t_d, d = 1664, 550
-idx = torch.tensor(torch.randperm(t_d)[:d])
+idx = torch.randperm(t_d)[:d].clone().detach()
 
 normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                  std=[0.229, 0.224, 0.225])

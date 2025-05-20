@@ -8,6 +8,7 @@ import torch
 import torch.optim
 import torch.nn as nn
 import torchvision.models as models
+from torchvision.models import ResNet18_Weights
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
 from torchvision import transforms
@@ -44,7 +45,10 @@ class ResNet18_MS3(nn.Module):
 
     def __init__(self, pretrained=False):
         super(ResNet18_MS3, self).__init__()
-        net = models.resnet18(pretrained=pretrained)
+        if pretrained:
+            net = models.resnet18(weights=ResNet18_Weights.IMAGENET1K_V1)
+        else:
+            net = models.resnet18(weights=None)
         self.model = torch.nn.Sequential(*(list(net.children())[:-2]))
 
     def forward(self, x):
