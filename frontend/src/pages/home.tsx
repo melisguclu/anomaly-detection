@@ -3,7 +3,7 @@ import ChatbotAnimation from '../components/chatbot-animation';
 
 const Home = () => {
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: 'white' }}>
+    <Box >
       {/* Chatbot Animation Section */}
       {/* Hero Section */}
       <Box sx={{ py: { xs: 8, md: 12 } }}>
