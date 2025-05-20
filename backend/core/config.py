@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     ]
     
     # Static files
-    STATIC_DIR: str = str(Path(__file__).resolve().parent.parent.parent / "static")
+    STATIC_DIR: str = str(Path(__file__).resolve().parent.parent / "static")
     
     class Config:
         case_sensitive = True

@@ -10,7 +10,7 @@ import torchvision.transforms as transforms
 import torch.nn.functional as F
 import cv2
 # Add the models directory to the Python path
-PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent.parent
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 MODELS_DIR = str(PROJECT_ROOT / "models")
 if MODELS_DIR not in sys.path:
     sys.path.append(MODELS_DIR)

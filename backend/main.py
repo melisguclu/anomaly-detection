@@ -3,8 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 import logging
 
-from app.core.config import get_settings
-from app.api.api import api_router
+from core.config import get_settings
+from api.api import api_router
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)

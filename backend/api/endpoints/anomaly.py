@@ -1,6 +1,6 @@
 from fastapi import APIRouter, UploadFile, File, HTTPException
-from ...schemas.anomaly import AnomalyDetectionResult
-from ...services.anomaly_detection import AnomalyDetectionService
+from schemas.anomaly import AnomalyDetectionResult
+from services.anomaly_detection import AnomalyDetectionService
 import logging
 
 logger = logging.getLogger(__name__)

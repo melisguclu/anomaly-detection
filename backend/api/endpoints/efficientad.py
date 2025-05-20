@@ -1,6 +1,6 @@
 from fastapi import APIRouter, UploadFile, File, HTTPException
-from ...schemas.anomaly import AnomalyDetectionResult
-from ...services.efficientad_detection import EfficientADDetectionService
+from schemas.anomaly import AnomalyDetectionResult
+from services.efficientad_detection import EfficientADDetectionService
 import logging
 import os
 

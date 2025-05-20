@@ -15,7 +15,7 @@ from torch.nn import Sequential
 # Add Sequential to safe globals for model loading
 add_safe_globals([Sequential])
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent.parent
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 MODEL_DIR = PROJECT_ROOT / "models" / "EfficientAD-main"
 
 if str(MODEL_DIR) not in sys.path:
