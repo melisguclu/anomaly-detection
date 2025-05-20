@@ -1,4 +1,5 @@
 import os
+import urllib.request
 import numpy as np
 import torch
 import torch.nn.functional as F
@@ -45,6 +46,13 @@ normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
 to_tensor = transforms.ToTensor()
 
 file_path = os.path.join(os.path.dirname(__file__), "train_wood.pkl")
+
+if not os.path.exists(file_path):
+    logger.info("Downloading pretrained model from Hugging Face...")
+    url = "https://huggingface.co/melisgcl/padim/resolve/main/train_wood.pkl"
+    urllib.request.urlretrieve(url, file_path)
+    logger.info("Download completed.")
+
 with open(file_path, "rb") as f:
     loaded = torch.load(f, weights_only=False)
     if len(loaded) == 3:
