@@ -1,7 +1,12 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 import logging
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from fastapi.staticfiles import StaticFiles
+from starlette.responses import FileResponse
+from starlette.middleware.base import BaseHTTPMiddleware
+import os
 
 from core.config import get_settings
 from api.api import api_router
@@ -20,7 +25,7 @@ app = FastAPI(
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.BACKEND_CORS_ORIGINS,
+    allow_origins=["*"],  # Allowing all origins for simplicity
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

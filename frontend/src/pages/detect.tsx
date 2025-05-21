@@ -545,7 +545,7 @@ const Detect = () => {
                           <Box sx={{ position: 'relative', mb: 2 }}>
                             <Box
                               component="img"
-                              src={`http://localhost:8000${result.result_image}`}
+                              src={result?.result_image ? `http://localhost:8000${result.result_image}` : ''}
                               alt="Detection results"
                               sx={{
                                 width: '100%',
@@ -620,7 +620,7 @@ const Detect = () => {
               <Divider sx={{ mb: 2 }} />
               <Box
                 component="img"
-                src={`http://localhost:8000${result?.result_image}`}
+                src={result?.result_image ? `http://localhost:8000${result.result_image}` : ''}
                 alt="Detection results"
                 sx={{
                   width: '100%',
@@ -710,7 +710,7 @@ const Detect = () => {
                     </Typography>
                     <Box
                       component="img"
-                      src={`http://localhost:8000${result?.result_image}`}
+                      src={result?.result_image ? `http://localhost:8000${result.result_image}` : ''}
                       alt="Detection results"
                       sx={{
                         width: '100%',
